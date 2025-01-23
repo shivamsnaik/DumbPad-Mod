@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DumbPad - Simple Notes</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="light-mode">
+    <div class="container">
+        <header>
+            <div class="notepad-controls">
+                <button id="new-notepad" class="icon-button" aria-label="Create new notepad">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                </button>
+                <div class="select-wrapper">
+                    <select id="notepad-selector">
+                        <option value="default">Default Notepad</option>
+                    </select>
+                    <button id="rename-notepad" class="icon-button" aria-label="Rename current notepad">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                        </svg>
+                    </button>
+                    <button id="delete-notepad" class="icon-button" aria-label="Delete current notepad">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18"></path>
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <h1>DumbPad</h1>
+            <button id="theme-toggle" aria-label="Toggle dark mode">
+                <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+                <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+            </button>
+        </header>
+        <main>
+            <div class="editor-container">
+                <textarea id="editor" placeholder="Start typing your notes here..." spellcheck="true" autofocus></textarea>
+            </div>
+        </main>
+        <div id="save-status" class="save-status"></div>
+        <div id="rename-modal" class="modal">
+            <div class="modal-content">
+                <h2>Rename Notepad</h2>
+                <input type="text" id="rename-input" placeholder="Enter new name">
+                <div class="modal-buttons">
+                    <button id="rename-cancel">Cancel</button>
+                    <button id="rename-confirm">Rename</button>
+                </div>
+            </div>
+        </div>
+        <div id="delete-modal" class="modal">
+            <div class="modal-content">
+                <h2>Delete Notepad</h2>
+                <p class="modal-message">Are you sure you want to delete this notepad? This action cannot be undone.</p>
+                <div class="modal-buttons">
+                    <button id="delete-cancel">Cancel</button>
+                    <button id="delete-confirm" class="danger">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html> 
