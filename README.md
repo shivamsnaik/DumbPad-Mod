@@ -1,6 +1,6 @@
 # DumbPad
 
-A simple, modern notepad application with auto-save functionality and dark mode support.
+A stupid simple, no auth, modern notepad application with auto-save functionality and dark mode support.
 
 ## Features
 
