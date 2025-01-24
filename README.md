@@ -19,13 +19,10 @@ A stupid simple, no auth (unless you want it!), modern notepad application with 
 
 Copy `.env.example` to `.env` and configure:
 
-```bash
-# Server port (default: 3000)
-PORT=3000
-
-# Optional 4-digit PIN protection
-DUMBPAD_PIN=1234  # Remove or leave empty for no protection
-```
+| Variable      | Description                | Default | Required |
+|--------------|----------------------------|---------|----------|
+| PORT         | Server port                | 3000    | No       |
+| DUMBPAD_PIN | 4-digit PIN for protection | None    | No       |
 
 ## Running Locally
 
