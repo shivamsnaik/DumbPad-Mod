@@ -278,6 +278,114 @@ main {
     background-color: rgba(220, 38, 38, 0.1);
 }
 
+#pin-modal {
+    background-color: var(--bg-color);
+}
+
+#pin-modal .modal-content {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.pin-header {
+    margin-bottom: 2rem;
+}
+
+.pin-header h1 {
+    color: white;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pin-header h2 {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.pin-container {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin: 2rem 0;
+}
+
+.pin-digit {
+    width: 3.5rem;
+    height: 4rem;
+    padding: 0;
+    border: 2px solid var(--secondary-color);
+    border-radius: 12px;
+    background-color: var(--textarea-bg);
+    color: var(--text-color);
+    font-size: 1.75rem;
+    text-align: center;
+    transition: all 0.2s ease;
+    caret-color: var(--primary-color);
+}
+
+.pin-digit:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-color);
+    outline: none;
+}
+
+.pin-digit.filled {
+    border-color: var(--primary-color);
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.error-message {
+    color: var(--danger-color);
+    margin-top: 1rem;
+    font-size: 0.875rem;
+}
+
+.modal-buttons button.primary {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    margin-top: 1rem;
+    min-width: 120px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.modal-buttons button.primary:hover {
+    background-color: var(--primary-color);
+    opacity: 0.9;
+}
+
+#pin-modal .modal-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+#pin-modal .modal-buttons button.primary {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
+    min-width: 120px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+#pin-modal .modal-buttons button.primary:hover {
+    background-color: var(--primary-color);
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+#pin-modal .modal-buttons button.primary:active {
+    transform: translateY(0);
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 0.5rem;
@@ -308,5 +416,17 @@ main {
 
     #theme-toggle {
         position: static;
+    }
+}
+
+@media (max-width: 480px) {
+    .pin-container {
+        gap: 0.75rem;
+    }
+
+    .pin-digit {
+        width: 3rem;
+        height: 3.5rem;
+        font-size: 1.5rem;
     }
 } 

@@ -1,6 +1,6 @@
 # DumbPad
 
-A stupid simple, no auth, modern notepad application with auto-save functionality and dark mode support.
+A stupid simple, no auth (unless you want it!), modern notepad application with auto-save functionality and dark mode support.
 
 ![image](https://github.com/user-attachments/assets/c6a00aac-f841-48a8-b8d3-c3d5378fc7d9)
 
@@ -12,8 +12,20 @@ A stupid simple, no auth, modern notepad application with auto-save functionalit
 - Dark mode support
 - Responsive design
 - Docker support
-- No authentication required
+- Optional PIN protection
 - File-based storage
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and configure:
+
+```bash
+# Server port (default: 3000)
+PORT=3000
+
+# Optional 4-digit PIN protection
+DUMBPAD_PIN=1234  # Remove or leave empty for no protection
+```
 
 ## Running Locally
 
@@ -22,7 +34,13 @@ A stupid simple, no auth, modern notepad application with auto-save functionalit
 npm install
 ```
 
-2. Start the server:
+2. Set up environment:
+```bash
+cp .env.example .env
+# Edit .env as needed
+```
+
+3. Start the server:
 ```bash
 npm start
 ```
@@ -38,7 +56,11 @@ docker build -t dumbpad .
 
 2. Run the container:
 ```bash
+# Without PIN protection
 docker run -p 3000:3000 -v $(pwd)/data:/app/data dumbpad
+
+# With PIN protection
+docker run -p 3000:3000 -v $(pwd)/data:/app/data -e DUMBPAD_PIN=1234 dumbpad
 ```
 
 The application will be available at `http://localhost:3000`
@@ -49,6 +71,7 @@ The application will be available at `http://localhost:3000`
 - Use the theme toggle in the top-right corner to switch between light and dark mode.
 - Press `Ctrl+S` (or `Cmd+S` on Mac) to force save.
 - The save status will be shown at the bottom of the screen.
+- If PIN protection is enabled, you'll need to enter the PIN to access the app.
 
 ## Technical Details
 

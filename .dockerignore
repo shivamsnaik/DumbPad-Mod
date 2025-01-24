@@ -5,4 +5,7 @@ data
 .gitignore
 .dockerignore
 Dockerfile
-README.md 
+README.md
+.env
+.env.*
+!.env.example 

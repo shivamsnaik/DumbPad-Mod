@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const fs = require('fs').promises;
@@ -7,10 +8,54 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_DIR = path.join(__dirname, 'data');
 const NOTEPADS_FILE = path.join(DATA_DIR, 'notepads.json');
+const PIN = process.env.DUMBPAD_PIN;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+
+// Pin verification endpoint
+app.post('/api/verify-pin', (req, res) => {
+    const { pin } = req.body;
+    
+    // If no PIN is set in env, always return success
+    if (!PIN) {
+        return res.json({ success: true });
+    }
+
+    // Verify the PIN
+    if (pin === PIN) {
+        res.json({ success: true });
+    } else {
+        res.status(401).json({ success: false, error: 'Invalid PIN' });
+    }
+});
+
+// Check if PIN is required
+app.get('/api/pin-required', (req, res) => {
+    res.json({ required: !!PIN });
+});
+
+// Pin protection middleware
+const requirePin = (req, res, next) => {
+    if (!PIN) {
+        return next();
+    }
+
+    const providedPin = req.headers['x-pin'];
+    if (providedPin !== PIN) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    next();
+};
+
+// Apply pin protection to all /api routes except pin verification
+app.use('/api', (req, res, next) => {
+    if (req.path === '/verify-pin' || req.path === '/pin-required') {
+        return next();
+    }
+    requirePin(req, res, next);
+});
 
 // Ensure data directory exists
 async function ensureDataDir() {

@@ -10,6 +10,24 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="light-mode">
+    <div id="pin-modal" class="modal">
+        <div class="modal-content">
+            <div class="pin-header">
+                <h1>DumbPad</h1>
+                <h2>Enter PIN</h2>
+            </div>
+            <div class="pin-container">
+                <input type="text" class="pin-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off">
+                <input type="text" class="pin-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off">
+                <input type="text" class="pin-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off">
+                <input type="text" class="pin-digit" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off">
+            </div>
+            <p id="pin-error" class="error-message"></p>
+            <div class="modal-buttons">
+                <button id="pin-submit" class="primary">Verify PIN</button>
+            </div>
+        </div>
+    </div>
     <div class="container">
         <header>
             <div class="notepad-controls">
