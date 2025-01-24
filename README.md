@@ -4,6 +4,7 @@ A stupid simple, no auth (unless you want it!), modern notepad application with 
 
 ![image](https://github.com/user-attachments/assets/c6a00aac-f841-48a8-b8d3-c3d5378fc7d9)
 
+![image](https://github.com/user-attachments/assets/6553f4e9-8764-4fb7-87b5-be872391df8c)
 
 ## Features
 
