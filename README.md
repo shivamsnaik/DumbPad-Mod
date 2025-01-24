@@ -15,6 +15,7 @@ A stupid simple, no auth (unless you want it!), modern notepad application with 
 - Docker support
 - Optional PIN protection
 - File-based storage
+- Data persistence across updates
 
 ## Environment Variables
 
@@ -63,6 +64,15 @@ docker run -p 3000:3000 -v $(pwd)/data:/app/data -e DUMBPAD_PIN=1234 dumbpad
 
 The application will be available at `http://localhost:3000`
 
+## Data Persistence
+
+Your notes are stored in the `data` directory, which is:
+- Excluded from version control (via `.gitignore`)
+- Preserved when updating the application
+- Mounted as a volume when running with Docker
+
+When updating the application (via git pull or otherwise), your notes will remain intact as they are stored separately from the application code.
+
 ## Usage
 
 - Just start typing! Your notes will be automatically saved.
@@ -75,5 +85,5 @@ The application will be available at `http://localhost:3000`
 
 - Backend: Node.js with Express
 - Frontend: Vanilla JavaScript
-- Storage: Simple file-based storage in `data/notes.txt`
+- Storage: File-based storage in `data` directory (git-ignored)
 - Styling: Modern CSS with CSS variables for theming 
