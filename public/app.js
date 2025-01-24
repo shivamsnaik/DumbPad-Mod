@@ -157,19 +157,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     observer.observe(pinModal, { attributes: true, attributeFilter: ['class'] });
 
-    // Load saved theme
-    if (localStorage.getItem('theme') === 'dark' || 
-        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.body.classList.remove('light-mode');
-        document.body.classList.add('dark-mode');
-    }
+    // Theme handling
+    const initializeTheme = () => {
+        if (localStorage.getItem('theme') === 'dark' || 
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.body.classList.remove('light-mode');
+            document.body.classList.add('dark-mode');
+        }
+    };
 
-    // Theme toggle
-    themeToggle.addEventListener('click', () => {
+    const toggleTheme = () => {
         document.body.classList.toggle('dark-mode');
         document.body.classList.toggle('light-mode');
         localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-    });
+    };
+
+    // Initialize theme immediately
+    initializeTheme();
+    themeToggle.addEventListener('click', toggleTheme);
 
     // Load notepads list
     const loadNotepads = async () => {
@@ -362,13 +367,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize the app after PIN verification
     const initializeApp = () => {
-        // Load saved theme
-        if (localStorage.getItem('theme') === 'dark' || 
-            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.body.classList.remove('light-mode');
-            document.body.classList.add('dark-mode');
-        }
-
         // Event Listeners
         editor.addEventListener('input', (e) => {
             clearTimeout(saveTimeout);
@@ -383,11 +381,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         newNotepadBtn.addEventListener('click', createNotepad);
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('dark-mode');
-            document.body.classList.toggle('light-mode');
-            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
-        });
 
         renameNotepadBtn.addEventListener('click', () => {
             const currentNotepad = notepadSelector.options[notepadSelector.selectedIndex];
@@ -431,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Initialize
+        // Initialize notepads
         loadNotepads().then(() => {
             loadNotes(currentNotepadId);
         });
