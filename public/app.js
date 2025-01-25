@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const notepadSelector = document.getElementById('notepad-selector');
     const newNotepadBtn = document.getElementById('new-notepad');
     const renameNotepadBtn = document.getElementById('rename-notepad');
+    const downloadNotepadBtn = document.getElementById('download-notepad');
     const deleteNotepadBtn = document.getElementById('delete-notepad');
     const renameModal = document.getElementById('rename-modal');
     const deleteModal = document.getElementById('delete-modal');
@@ -404,6 +405,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Download current notepad
+    const downloadNotepad = () => {
+        const notepadName = notepadSelector.options[notepadSelector.selectedIndex].text;
+        const content = editor.value;
+        
+        // Create blob with content
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        
+        // Create temporary link and trigger download
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${notepadName}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Cleanup
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        // Show download status
+        saveStatus.textContent = 'Downloaded';
+        saveStatus.classList.add('visible');
+        setTimeout(() => {
+            saveStatus.classList.remove('visible');
+        }, 2000);
+    };
+
     // Initialize the app after PIN verification
     const initializeApp = () => {
         // Event Listeners
@@ -420,6 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         newNotepadBtn.addEventListener('click', createNotepad);
+        downloadNotepadBtn.addEventListener('click', downloadNotepad);
 
         renameNotepadBtn.addEventListener('click', () => {
             const currentNotepad = notepadSelector.options[notepadSelector.selectedIndex];
