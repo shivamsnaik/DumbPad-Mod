@@ -3,12 +3,32 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs').promises;
 const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_DIR = path.join(__dirname, 'data');
 const NOTEPADS_FILE = path.join(DATA_DIR, 'notepads.json');
 const PIN = process.env.DUMBPAD_PIN;
+
+// Validate PIN format
+function isValidPin(pin) {
+    return typeof pin === 'string' && /^\d{4,10}$/.test(pin);
+}
+
+// Constant-time string comparison to prevent timing attacks
+function secureCompare(a, b) {
+    if (typeof a !== 'string' || typeof b !== 'string') {
+        return false;
+    }
+    
+    // Use Node's built-in constant-time comparison
+    try {
+        return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+    } catch (err) {
+        return false;
+    }
+}
 
 app.use(cors());
 app.use(express.json());
@@ -23,8 +43,13 @@ app.post('/api/verify-pin', (req, res) => {
         return res.json({ success: true });
     }
 
-    // Verify the PIN
-    if (pin === PIN) {
+    // Validate PIN format
+    if (!isValidPin(pin)) {
+        return res.status(400).json({ success: false, error: 'Invalid PIN format' });
+    }
+
+    // Verify the PIN using constant-time comparison
+    if (pin && secureCompare(pin, PIN)) {
         res.json({ success: true });
     } else {
         res.status(401).json({ success: false, error: 'Invalid PIN' });
@@ -33,7 +58,10 @@ app.post('/api/verify-pin', (req, res) => {
 
 // Check if PIN is required
 app.get('/api/pin-required', (req, res) => {
-    res.json({ required: !!PIN });
+    res.json({ 
+        required: !!PIN,
+        length: PIN ? PIN.length : 0
+    });
 });
 
 // Pin protection middleware
@@ -43,7 +71,10 @@ const requirePin = (req, res, next) => {
     }
 
     const providedPin = req.headers['x-pin'];
-    if (providedPin !== PIN) {
+    if (!isValidPin(providedPin)) {
+        return res.status(400).json({ error: 'Invalid PIN format' });
+    }
+    if (!providedPin || !secureCompare(providedPin, PIN)) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
     next();

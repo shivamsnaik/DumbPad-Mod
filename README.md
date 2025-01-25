@@ -24,7 +24,7 @@ Copy `.env.example` to `.env` and configure:
 | Variable      | Description                | Default | Required |
 |--------------|----------------------------|---------|----------|
 | PORT         | Server port                | 3000    | No       |
-| DUMBPAD_PIN | 4-digit PIN for protection | None    | No       |
+| DUMBPAD_PIN | 4-10 digit PIN for protection | None    | No       |
 
 ## Running Locally
 

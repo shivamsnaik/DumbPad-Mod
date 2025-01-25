@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const renameModal = document.getElementById('rename-modal');
     const deleteModal = document.getElementById('delete-modal');
     const pinModal = document.getElementById('pin-modal');
-    const pinDigits = document.querySelectorAll('.pin-digit');
+    const pinContainer = document.getElementById('pin-container');
     const pinError = document.getElementById('pin-error');
     const pinSubmit = document.getElementById('pin-submit');
     const renameInput = document.getElementById('rename-input');
@@ -19,15 +19,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteConfirm = document.getElementById('delete-confirm');
     
     let saveTimeout;
+    let lastSaveTime = Date.now();
+    const SAVE_INTERVAL = 10000; // Save every 10 seconds while typing
     let currentNotepadId = 'default';
     let verifiedPin = null;
+    let pinLength = 4;
+    let pinDigits = [];
+
+    // Create PIN input boxes
+    function createPinInputs(length) {
+        pinContainer.innerHTML = '';
+        pinDigits = [];
+        
+        for (let i = 0; i < length; i++) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'pin-digit';
+            input.maxLength = 1;
+            input.pattern = '[0-9]';
+            input.inputMode = 'numeric';
+            input.autocomplete = 'off';
+            
+            input.addEventListener('input', (e) => handlePinInput(e, i));
+            input.addEventListener('keydown', (e) => handlePinKeydown(e, i));
+            input.addEventListener('paste', (e) => e.preventDefault());
+            
+            pinContainer.appendChild(input);
+            pinDigits.push(input);
+        }
+    }
 
     // Check if PIN is required
     const checkPinRequired = async () => {
         try {
             const response = await fetch('/api/pin-required');
-            const { required } = await response.json();
+            const { required, length } = await response.json();
             if (required) {
+                pinLength = length;
+                createPinInputs(length);
                 pinModal.classList.add('visible');
             } else {
                 initializeApp();
@@ -53,10 +82,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Move to next input if available
             if (index < pinDigits.length - 1) {
                 pinDigits[index + 1].focus();
-            } else {
-                // If this is the last digit and it's filled, submit automatically
+            } else if (index === pinDigits.length - 1) {
+                // If this is the last digit and it's filled
                 const pin = Array.from(pinDigits).map(digit => digit.value).join('');
-                if (pin.length === 4) {
+                if (pin.length === pinLength) {
                     // Add a small delay to show the last digit being filled
                     setTimeout(() => {
                         verifyPin(pin);
@@ -93,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const submitPin = () => {
         const pin = Array.from(pinDigits).map(digit => digit.value).join('');
-        if (pin.length === 4) {
+        if (pin.length === pinLength) {
             verifyPin(pin);
         }
     };
@@ -247,6 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Show save status
             saveStatus.textContent = 'Saved';
             saveStatus.classList.add('visible');
+            lastSaveTime = Date.now();
             setTimeout(() => {
                 saveStatus.classList.remove('visible');
             }, 2000);
@@ -257,6 +287,14 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 saveStatus.classList.remove('visible');
             }, 2000);
+        }
+    };
+
+    // Check if we should do a periodic save
+    const checkPeriodicSave = (content) => {
+        const now = Date.now();
+        if (now - lastSaveTime >= SAVE_INTERVAL) {
+            saveNotes(content);
         }
     };
 
@@ -271,6 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event Listeners
     editor.addEventListener('input', (e) => {
         debouncedSave(e.target.value);
+        checkPeriodicSave(e.target.value);
     });
 
     notepadSelector.addEventListener('change', (e) => {
