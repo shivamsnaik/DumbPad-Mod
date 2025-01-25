@@ -71,7 +71,41 @@ Your notes are stored in the `data` directory, which is:
 - Preserved when updating the application
 - Mounted as a volume when running with Docker
 
-When updating the application (via git pull or otherwise), your notes will remain intact as they are stored separately from the application code.
+To ensure your notes persist across updates:
+
+1. If running locally:
+   ```bash
+   # First time setup
+   mkdir -p data
+   touch data/.gitkeep
+
+   # When updating
+   git stash        # Stash any local changes
+   git pull        # Pull latest changes
+   git stash pop   # Restore local changes
+   ```
+
+2. If running with Docker:
+   ```bash
+   # First time setup
+   mkdir -p data
+   
+   # Running with proper volume mount
+   docker run -p 3000:3000 \
+     -v "$(pwd)/data:/app/data" \
+     -e DUMBPAD_PIN=1234 \
+     dumbpad
+
+   # When updating
+   docker pull dumbpad:latest  # Pull latest image
+   # Then run again with the same volume mount
+   ```
+
+The `data` directory contains:
+- `notepads.json`: List of all notepads
+- Individual `.txt` files for each notepad's content
+
+⚠️ Important: Never delete the `data` directory when updating! This is where all your notes are stored.
 
 ## Usage
 

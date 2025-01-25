@@ -91,17 +91,43 @@ app.use('/api', (req, res, next) => {
 // Ensure data directory exists
 async function ensureDataDir() {
     try {
+        // Create data directory if it doesn't exist
         await fs.mkdir(DATA_DIR, { recursive: true });
+        
         // Create notepads.json if it doesn't exist
         try {
             await fs.access(NOTEPADS_FILE);
-        } catch {
+            // If file exists, validate its structure
+            const content = await fs.readFile(NOTEPADS_FILE, 'utf8');
+            try {
+                const data = JSON.parse(content);
+                if (!data.notepads || !Array.isArray(data.notepads)) {
+                    throw new Error('Invalid notepads structure');
+                }
+            } catch (err) {
+                console.error('Invalid notepads.json, recreating:', err);
+                await fs.writeFile(NOTEPADS_FILE, JSON.stringify({
+                    notepads: [{ id: 'default', name: 'Default Notepad' }]
+                }, null, 2));
+            }
+        } catch (err) {
+            // File doesn't exist or can't be accessed, create it
+            console.log('Creating new notepads.json');
             await fs.writeFile(NOTEPADS_FILE, JSON.stringify({
                 notepads: [{ id: 'default', name: 'Default Notepad' }]
-            }));
+            }, null, 2));
+        }
+
+        // Ensure default notepad file exists
+        const defaultNotePath = path.join(DATA_DIR, 'default.txt');
+        try {
+            await fs.access(defaultNotePath);
+        } catch {
+            await fs.writeFile(defaultNotePath, '');
         }
     } catch (err) {
-        console.error('Error creating data directory:', err);
+        console.error('Error initializing data directory:', err);
+        throw err;
     }
 }
 

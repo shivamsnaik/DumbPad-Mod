@@ -8,8 +8,8 @@ RUN npm install --production
 
 COPY . .
 
-# Create data directory
-RUN mkdir -p data
+# Create data directory and ensure it's a volume
+VOLUME /app/data
 
 EXPOSE 3000
 
