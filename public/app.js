@@ -501,15 +501,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add PIN to all API requests
     const fetchWithPin = async (url, options = {}) => {
-        if (verifiedPin) {
-            options.headers = {
-                ...options.headers,
-                'X-Pin': verifiedPin
-            };
-        }
+        // Add credentials to include cookies
+        options.credentials = 'same-origin';
         return fetch(url, options);
     };
 
     // Start the app by checking if PIN is required
-    checkPinRequired();
+    initializeApp();
 }); 

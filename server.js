@@ -4,12 +4,15 @@ const cors = require('cors');
 const fs = require('fs').promises;
 const path = require('path');
 const crypto = require('crypto');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_DIR = path.join(__dirname, 'data');
 const NOTEPADS_FILE = path.join(DATA_DIR, 'notepads.json');
 const PIN = process.env.DUMBPAD_PIN;
+const COOKIE_NAME = 'dumbpad_auth';
+const COOKIE_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
 
 // Validate PIN format
 function isValidPin(pin) {
@@ -30,9 +33,44 @@ function secureCompare(a, b) {
     }
 }
 
-app.use(cors());
+app.use(cors({
+    credentials: true,
+    origin: true
+}));
 app.use(express.json());
-app.use(express.static('public'));
+app.use(cookieParser());
+app.use(express.static('public', {
+    index: false
+}));
+
+// Main app route with PIN check
+app.get('/', (req, res) => {
+    const pin = process.env.DUMBPAD_PIN;
+    
+    // Skip PIN if not configured
+    if (!pin || !isValidPin(pin)) {
+        return res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    }
+
+    // Check PIN cookie
+    const authCookie = req.cookies[COOKIE_NAME];
+    if (!authCookie || !secureCompare(authCookie, pin)) {
+        return res.redirect('/login');
+    }
+
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Login page route
+app.get('/login', (req, res) => {
+    // If no PIN is required or user is already authenticated, redirect to main app
+    const pin = process.env.DUMBPAD_PIN;
+    if (!pin || !isValidPin(pin) || (req.cookies[COOKIE_NAME] && secureCompare(req.cookies[COOKIE_NAME], pin))) {
+        return res.redirect('/');
+    }
+    
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
 
 // Pin verification endpoint
 app.post('/api/verify-pin', (req, res) => {
@@ -50,6 +88,13 @@ app.post('/api/verify-pin', (req, res) => {
 
     // Verify the PIN using constant-time comparison
     if (pin && secureCompare(pin, PIN)) {
+        // Set secure HTTP-only cookie
+        res.cookie(COOKIE_NAME, pin, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: COOKIE_MAX_AGE
+        });
         res.json({ success: true });
     } else {
         res.status(401).json({ success: false, error: 'Invalid PIN' });
@@ -59,22 +104,19 @@ app.post('/api/verify-pin', (req, res) => {
 // Check if PIN is required
 app.get('/api/pin-required', (req, res) => {
     res.json({ 
-        required: !!PIN,
+        required: !!PIN && isValidPin(PIN),
         length: PIN ? PIN.length : 0
     });
 });
 
 // Pin protection middleware
 const requirePin = (req, res, next) => {
-    if (!PIN) {
+    if (!PIN || !isValidPin(PIN)) {
         return next();
     }
 
-    const providedPin = req.headers['x-pin'];
-    if (!isValidPin(providedPin)) {
-        return res.status(400).json({ error: 'Invalid PIN format' });
-    }
-    if (!providedPin || !secureCompare(providedPin, PIN)) {
+    const authCookie = req.cookies[COOKIE_NAME];
+    if (!authCookie || !secureCompare(authCookie, PIN)) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
     next();
