@@ -1,0 +1,18 @@
+services:
+  dumbpad:
+    container_name: dumbpad
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./data:/app/data
+    ports:
+      - 127.0.0.1:${LOCAL_PORT}:${PORT}
+    networks:
+      - overlay-proxy-network
+    environment:
+      - DUMBPAD_PIN=${DUMBPAD_PIN}
+      - PORT=${PORT}
+networks:
+  overlay-proxy-network:
+    external: true

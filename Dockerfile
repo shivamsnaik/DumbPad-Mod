@@ -11,6 +11,6 @@ COPY . .
 # Create data directory and ensure it's a volume
 VOLUME /app/data
 
-EXPOSE 3000
+EXPOSE ${PORT}
 
 CMD ["npm", "start"] 

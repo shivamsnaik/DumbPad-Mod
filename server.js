@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 3000;
 const DATA_DIR = path.join(__dirname, 'data');
 const NOTEPADS_FILE = path.join(DATA_DIR, 'notepads.json');
 const PIN = process.env.DUMBPAD_PIN;
-const COOKIE_NAME = 'dumbpad_auth';
+const COOKIE_NAME = process.env.COOKIE_NAME;
 const COOKIE_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
 
 // Brute force protection
