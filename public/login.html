@@ -122,6 +122,18 @@
                 pinDigits[0].focus();
             };
 
+            // Disable/Enable PIN inputs
+            const setPinInputsDisabled = (disabled) => {
+                pinDigits.forEach(digit => {
+                    digit.disabled = disabled;
+                    if (disabled) {
+                        digit.classList.add('disabled');
+                    } else {
+                        digit.classList.remove('disabled');
+                    }
+                });
+            };
+
             // Verify PIN
             const verifyPin = async (pin) => {
                 try {
@@ -139,7 +151,12 @@
                         pinError.textContent = '';
                         window.location.href = '/';
                     } else {
-                        pinError.textContent = 'Invalid PIN';
+                        if (response.status === 429) {
+                            pinError.textContent = data.error;
+                            setPinInputsDisabled(true);
+                        } else {
+                            pinError.textContent = `Invalid PIN. ${data.attemptsLeft} attempts remaining.`;
+                        }
                         clearPinInputs();
                     }
                 } catch (err) {
@@ -157,7 +174,22 @@
                     if (required) {
                         pinLength = length;
                         createPinInputs(length);
-                        pinDigits[0].focus();
+                        // Check if user is currently locked out
+                        const lockoutCheck = await fetch('/api/verify-pin', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ pin: '0000' }),
+                            credentials: 'same-origin'
+                        });
+                        const lockoutData = await lockoutCheck.json();
+                        
+                        if (lockoutCheck.status === 429) {
+                            pinError.textContent = lockoutData.error;
+                            setPinInputsDisabled(true);
+                        } else {
+                            setPinInputsDisabled(false);
+                            pinDigits[0].focus();
+                        }
                     } else {
                         window.location.href = '/';
                     }

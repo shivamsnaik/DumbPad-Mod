@@ -327,6 +327,22 @@ main {
     padding: 0;
 }
 
+.pin-digit:disabled,
+.pin-digit.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: var(--secondary-color) !important;
+    background-color: var(--textarea-bg) !important;
+    color: var(--text-color) !important;
+    box-shadow: none !important;
+}
+
+.pin-digit.disabled:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    box-shadow: none;
+}
+
 .pin-digit:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px var(--primary-color);

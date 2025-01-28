@@ -13,9 +13,55 @@ A stupid simple, no auth (unless you want it!), modern notepad application with 
 - Dark mode support
 - Responsive design
 - Docker support
-- Optional PIN protection
+- Optional PIN protection (4-10 digits)
 - File-based storage
 - Data persistence across updates
+
+## Quick Start
+
+### Using Docker (Recommended)
+
+```bash
+# Pull the latest image
+docker pull dumbwareio/dumbpad:latest
+
+# Run without PIN protection
+docker run -p 3000:3000 \
+  -v "$(pwd)/data:/app/data" \
+  dumbwareio/dumbpad
+
+# Run with PIN protection
+docker run -p 3000:3000 \
+  -v "$(pwd)/data:/app/data" \
+  -e DUMBPAD_PIN=1234 \
+  dumbwareio/dumbpad
+```
+
+### Running Locally
+
+1. Clone the repository:
+```bash
+git clone https://github.com/dumbwareio/dumbpad.git
+cd dumbpad
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Set up environment:
+```bash
+cp .env.example .env
+# Edit .env as needed
+```
+
+4. Start the server:
+```bash
+npm start
+```
+
+The application will be available at `http://localhost:3000`
 
 ## Environment Variables
 
@@ -24,45 +70,39 @@ Copy `.env.example` to `.env` and configure:
 | Variable      | Description                | Default | Required |
 |--------------|----------------------------|---------|----------|
 | PORT         | Server port                | 3000    | No       |
-| DUMBPAD_PIN | 4-10 digit PIN for protection | None    | No       |
+| DUMBPAD_PIN  | 4-10 digit PIN protection  | None    | No       |
 
-## Running Locally
+## Security Features
 
-1. Install dependencies:
+### PIN Protection
+- Optional 4-10 digit PIN
+- Brute force protection:
+  - 5 attempts maximum
+  - 15-minute lockout after failed attempts
+  - IP-based tracking
+  - Constant-time comparison
+  - Secure cookie storage
+
+### Data Security
+- File-based storage in `data` directory
+- Data directory excluded from version control
+- Secure volume mounting in Docker
+
+## Building from Source
+
+1. Clone and build:
 ```bash
-npm install
+git clone https://github.com/dumbwareio/dumbpad.git
+cd dumbpad
+docker build -t dumbwareio/dumbpad:latest .
 ```
 
-2. Set up environment:
+2. Run your local build:
 ```bash
-cp .env.example .env
-# Edit .env as needed
+docker run -p 3000:3000 \
+  -v "$(pwd)/data:/app/data" \
+  dumbwareio/dumbpad:latest
 ```
-
-3. Start the server:
-```bash
-npm start
-```
-
-The application will be available at `http://localhost:3000`
-
-## Running with Docker
-
-1. Build the Docker image:
-```bash
-docker build -t dumbpad .
-```
-
-2. Run the container:
-```bash
-# Without PIN protection
-docker run -p 3000:3000 -v $(pwd)/data:/app/data dumbpad
-
-# With PIN protection
-docker run -p 3000:3000 -v $(pwd)/data:/app/data -e DUMBPAD_PIN=1234 dumbpad
-```
-
-The application will be available at `http://localhost:3000`
 
 ## Data Persistence
 
@@ -93,17 +133,12 @@ To ensure your notes persist across updates:
    # Running with proper volume mount
    docker run -p 3000:3000 \
      -v "$(pwd)/data:/app/data" \
-     -e DUMBPAD_PIN=1234 \
-     dumbpad
+     dumbwareio/dumbpad:latest
 
    # When updating
-   docker pull dumbpad:latest  # Pull latest image
+   docker pull dumbwareio/dumbpad:latest
    # Then run again with the same volume mount
    ```
-
-The `data` directory contains:
-- `notepads.json`: List of all notepads
-- Individual `.txt` files for each notepad's content
 
 ⚠️ Important: Never delete the `data` directory when updating! This is where all your notes are stored.
 
@@ -112,12 +147,28 @@ The `data` directory contains:
 - Just start typing! Your notes will be automatically saved.
 - Use the theme toggle in the top-right corner to switch between light and dark mode.
 - Press `Ctrl+S` (or `Cmd+S` on Mac) to force save.
-- The save status will be shown at the bottom of the screen.
+- Auto-saves every 10 seconds while typing.
+- Create multiple notepads with the + button.
+- Download notepads as .txt files.
 - If PIN protection is enabled, you'll need to enter the PIN to access the app.
 
 ## Technical Details
 
 - Backend: Node.js with Express
 - Frontend: Vanilla JavaScript
-- Storage: File-based storage in `data` directory (git-ignored)
-- Styling: Modern CSS with CSS variables for theming 
+- Storage: File-based storage in `data` directory
+- Styling: Modern CSS with CSS variables for theming
+- Security: Constant-time PIN comparison, brute force protection
+
+## Links
+
+- GitHub: [github.com/dumbwareio/dumbpad](https://github.com/dumbwareio/dumbpad)
+- Docker Hub: [hub.docker.com/r/dumbwareio/dumbpad](https://hub.docker.com/r/dumbwareio/dumbpad)
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch: `git checkout -b feature/my-feature`
+3. Commit your changes: `git commit -am 'Add my feature'`
+4. Push to the branch: `git push origin feature/my-feature`
+5. Submit a pull request

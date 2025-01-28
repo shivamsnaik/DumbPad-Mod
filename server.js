@@ -14,6 +14,49 @@ const PIN = process.env.DUMBPAD_PIN;
 const COOKIE_NAME = 'dumbpad_auth';
 const COOKIE_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
 
+// Brute force protection
+const loginAttempts = new Map();
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes in milliseconds
+
+// Reset attempts for an IP
+function resetAttempts(ip) {
+    loginAttempts.delete(ip);
+}
+
+// Check if an IP is locked out
+function isLockedOut(ip) {
+    const attempts = loginAttempts.get(ip);
+    if (!attempts) return false;
+    
+    if (attempts.count >= MAX_ATTEMPTS) {
+        const timeElapsed = Date.now() - attempts.lastAttempt;
+        if (timeElapsed < LOCKOUT_TIME) {
+            return true;
+        }
+        resetAttempts(ip);
+    }
+    return false;
+}
+
+// Record an attempt for an IP
+function recordAttempt(ip) {
+    const attempts = loginAttempts.get(ip) || { count: 0, lastAttempt: 0 };
+    attempts.count += 1;
+    attempts.lastAttempt = Date.now();
+    loginAttempts.set(ip, attempts);
+}
+
+// Cleanup old lockouts periodically
+setInterval(() => {
+    const now = Date.now();
+    for (const [ip, attempts] of loginAttempts.entries()) {
+        if (now - attempts.lastAttempt >= LOCKOUT_TIME) {
+            loginAttempts.delete(ip);
+        }
+    }
+}, 60000); // Clean up every minute
+
 // Validate PIN format
 function isValidPin(pin) {
     return typeof pin === 'string' && /^\d{4,10}$/.test(pin);
@@ -81,13 +124,28 @@ app.post('/api/verify-pin', (req, res) => {
         return res.json({ success: true });
     }
 
+    const ip = req.ip;
+    
+    // Check if IP is locked out
+    if (isLockedOut(ip)) {
+        const attempts = loginAttempts.get(ip);
+        const timeLeft = Math.ceil((LOCKOUT_TIME - (Date.now() - attempts.lastAttempt)) / 1000 / 60);
+        return res.status(429).json({ 
+            error: `Too many attempts. Please try again in ${timeLeft} minutes.`
+        });
+    }
+
     // Validate PIN format
     if (!isValidPin(pin)) {
+        recordAttempt(ip);
         return res.status(400).json({ success: false, error: 'Invalid PIN format' });
     }
 
     // Verify the PIN using constant-time comparison
     if (pin && secureCompare(pin, PIN)) {
+        // Reset attempts on successful login
+        resetAttempts(ip);
+
         // Set secure HTTP-only cookie
         res.cookie(COOKIE_NAME, pin, {
             httpOnly: true,
@@ -97,7 +155,17 @@ app.post('/api/verify-pin', (req, res) => {
         });
         res.json({ success: true });
     } else {
-        res.status(401).json({ success: false, error: 'Invalid PIN' });
+        // Record failed attempt
+        recordAttempt(ip);
+        
+        const attempts = loginAttempts.get(ip);
+        const attemptsLeft = MAX_ATTEMPTS - attempts.count;
+        
+        res.status(401).json({ 
+            success: false, 
+            error: 'Invalid PIN',
+            attemptsLeft: Math.max(0, attemptsLeft)
+        });
     }
 });
 
