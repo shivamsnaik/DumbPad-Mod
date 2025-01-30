@@ -214,6 +214,10 @@ document.addEventListener('DOMContentLoaded', () => {
             notepadSelector.innerHTML = data.notepads
                 .map(pad => `<option value="${pad.id}">${pad.name}</option>`)
                 .join('');
+
+            // ## shivamsnaik@icloud.com ## - Logic to store last used notes.
+            notepadSelector.value = data.current_note
+            currentNotepadId = data.current_note
             return data.notepads;
         } catch (err) {
             console.error('Error loading notepads:', err);

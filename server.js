@@ -262,6 +262,9 @@ app.post('/api/notepads', async (req, res) => {
             name: `Notepad ${data.notepads.length + 1}`
         };
         data.notepads.push(newNotepad);
+        // ## shivamsnaik@icloud.com - Store the new notepad as the last used notes. 
+        data.current_note = id;
+        
         await fs.writeFile(NOTEPADS_FILE, JSON.stringify(data));
         await fs.writeFile(path.join(DATA_DIR, `${id}.txt`), '');
         res.json(newNotepad);
@@ -295,6 +298,12 @@ app.get('/api/notes/:id', async (req, res) => {
         const notePath = path.join(DATA_DIR, `${id}.txt`);
         const notes = await fs.readFile(notePath, 'utf8').catch(() => '');
         res.json({ content: notes });
+
+        // ## shivamsnaik@icloud.com - Save the loaded notes as last used notes. Persistent Last used page memory.
+        const data = JSON.parse(await fs.readFile(NOTEPADS_FILE, 'utf8'));
+        data.current_note = id;
+        await fs.writeFile(NOTEPADS_FILE, JSON.stringify(data));
+
     } catch (err) {
         res.status(500).json({ error: 'Error reading notes' });
     }
