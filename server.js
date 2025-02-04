@@ -318,12 +318,6 @@ app.get('/api/notes/:id', async (req, res) => {
         });
 
         res.json({ content: notes });
-
-        // ## shivamsnaik@icloud.com - Save the loaded notes as last used notes. Persistent Last used page memory.
-        const data = JSON.parse(await fs.readFile(NOTEPADS_FILE, 'utf8'));
-        data.current_note = id;
-        await fs.writeFile(NOTEPADS_FILE, JSON.stringify(data));
-
     } catch (err) {
         res.status(500).json({ error: 'Error reading notes' });
     }
