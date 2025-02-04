@@ -211,10 +211,14 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetchWithPin('/api/notepads');
             const data = await response.json();
-            notepadSelector.innerHTML = data.notepads
-                .map(pad => `<option value="${pad.id}">${pad.name}</option>`)
+
+            // Read the existing cookie value
+            currentNotepadId = data['note_history'];
+            
+            // Set the appropriate selector value based on the history
+            notepadSelector.innerHTML = data.notepads_list.notepads
+                .map(pad => `<option value="${pad.id}"${pad.id === currentNotepadId?'selected':''}>${pad.name}</option>`)
                 .join('');
-            return data.notepads;
         } catch (err) {
             console.error('Error loading notepads:', err);
             return [];
