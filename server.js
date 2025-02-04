@@ -13,6 +13,8 @@ const NOTEPADS_FILE = path.join(DATA_DIR, 'notepads.json');
 const PIN = process.env.DUMBPAD_PIN;
 const COOKIE_NAME = process.env.COOKIE_NAME || 'dumb-auth';
 const COOKIE_MAX_AGE = 24 * 60 * 60 * 1000; // 24 hours
+const PAGE_HISTORY_COOKIE = 'dumbpad_page_history';
+const PAGE_HISTORY_COOKIE_AGE = 365 * 24 * 60 * 60 * 1000. // 1 Year
 
 // Brute force protection
 const loginAttempts = new Map();
@@ -246,7 +248,10 @@ app.get('/api/notepads', async (req, res) => {
     try {
         await ensureDataDir();
         const data = await fs.readFile(NOTEPADS_FILE, 'utf8');
-        res.json(JSON.parse(data));
+
+        // Return the existing cookie value along with notes
+        const note_history = req.cookies.dumbpad_page_history || 'default';
+        res.json({'notepads_list':JSON.parse(data), 'note_history':note_history});
     } catch (err) {
         res.status(500).json({ error: 'Error reading notepads list' });
     }
@@ -262,9 +267,15 @@ app.post('/api/notepads', async (req, res) => {
             name: `Notepad ${data.notepads.length + 1}`
         };
         data.notepads.push(newNotepad);
-        // ## shivamsnaik@icloud.com - Store the new notepad as the last used notes. 
-        data.current_note = id;
-        
+
+        // Set new notes as the current page in cookies.
+        res.cookie(PAGE_HISTORY_COOKIE, id, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: PAGE_HISTORY_COOKIE_AGE
+        });
+
         await fs.writeFile(NOTEPADS_FILE, JSON.stringify(data));
         await fs.writeFile(path.join(DATA_DIR, `${id}.txt`), '');
         res.json(newNotepad);
@@ -273,7 +284,7 @@ app.post('/api/notepads', async (req, res) => {
     }
 });
 
-// Rename notepad
+// Rename notepad   
 app.put('/api/notepads/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -297,13 +308,16 @@ app.get('/api/notes/:id', async (req, res) => {
         const { id } = req.params;
         const notePath = path.join(DATA_DIR, `${id}.txt`);
         const notes = await fs.readFile(notePath, 'utf8').catch(() => '');
+        
+        // Set loaded notes as the current page in cookies.
+        res.cookie(PAGE_HISTORY_COOKIE, id, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: PAGE_HISTORY_COOKIE_AGE
+        });
+
         res.json({ content: notes });
-
-        // ## shivamsnaik@icloud.com - Save the loaded notes as last used notes. Persistent Last used page memory.
-        const data = JSON.parse(await fs.readFile(NOTEPADS_FILE, 'utf8'));
-        data.current_note = id;
-        await fs.writeFile(NOTEPADS_FILE, JSON.stringify(data));
-
     } catch (err) {
         res.status(500).json({ error: 'Error reading notes' });
     }
